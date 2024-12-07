@@ -2,7 +2,7 @@ package hello;
 
 public class Greeter {
   public String sayHello() {
-    return "Hello World!";
+    return "Hello Ashwin!, This is the Sample Maven Application";
    }
  }
 
