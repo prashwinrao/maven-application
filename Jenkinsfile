@@ -7,7 +7,7 @@ pipeline {
         dockerTool "docker"
     }
     environment {
-        REGISTRY="ashwinraopr"
+        DOCKER_REGISTRY="ashwinraopr"
     }
     stages {
         stage('SCM Checkout') {
@@ -32,11 +32,27 @@ pipeline {
                 }
             }
         }
-        stage('Build and Push Docker Image') {
+        stage('Build Docker Image') {
             steps {
                 script {
                     def imageName = "ashwinraopr/my-webapp:${BUILD_NUMBER}"
                     sh "docker build --build-arg BUILD_NUMBER=${BUILD_NUMBER} -t ${imageName} ."
+                    echo "Docker build ${imageName} pushed successfully."
+                }
+            }
+        }
+         stage('Push Docker Image') {
+            steps {
+                script {
+                    def imageName = "${DOCKER_REGISTRY}/my-webapp:${BUILD_NUMBER}"
+                    withCredentials([usernamePassword(credentialsId: 'docker-creds', passwordVariable: 'DOCKER_PASS', usernameVariable: 'DOCKER_USER')]) {
+                        sh """
+                        echo "${DOCKER_PASS}" | docker login -u "${DOCKER_USER}" --password-stdin
+                        docker push ${imageName}
+                        docker logout
+                        """
+                    }
+                    
                     echo "Docker image ${imageName} pushed successfully."
                 }
             }
